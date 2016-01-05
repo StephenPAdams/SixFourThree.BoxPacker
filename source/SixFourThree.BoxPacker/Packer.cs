@@ -134,24 +134,18 @@ namespace SixFourThree.BoxPacker
         /// </summary>
         /// <returns></returns>
         public PackedBoxList PackByVolume()
-        {     
+        {
             var packedBoxes = new PackedBoxList();
-            ItemList nonProcessedItems = new ItemList();
 
-            foreach (var item in Items.GetContent().Cast<Item>().ToList())
+            while (Items.GetCount() > 0)
             {
-                nonProcessedItems.Insert(item);
-            }
-
-            while (nonProcessedItems.GetCount() > 0)
-            {
-                var boxesToEvaluate = Boxes.Copy();
+                var boxesToEvaluate = Boxes.ShallowCopy();
                 var packedBoxesIteration = new PackedBoxList();
 
                 while (!boxesToEvaluate.IsEmpty())
                 {
                     var box = boxesToEvaluate.ExtractMin();
-                    var packedBox = PackIntoBox(box, nonProcessedItems.Copy(), out nonProcessedItems);
+                    var packedBox = PackIntoBox(box, Items.ShallowCopy());
 
                     if (packedBox.GetItems().GetCount() > 0)
                     {
@@ -163,25 +157,37 @@ namespace SixFourThree.BoxPacker
                     }
                 }
 
-                // Check iteration was productive 
+                // Check iteration was productive
                 if (packedBoxesIteration.IsEmpty())
-                {      
-                    // OKAY, product was either TOO BIG or we RAN OUT OF BOXES
-                    // If product is TOO BIG, we should have an option to allow for a custom box size to accommodate it
-                    // If we RAN OUT OF BOXES, we should have an appropriate exception
-
-                    // So we don't have enough boxes, let's just knock it off the heap
-                    // We should probably log these somewhere to bubble them up to the library user
-                    nonProcessedItems.ExtractMax();
-                    /*
                     throw new Exception(String.Format("Item {0} is too large to fit into any box.",
-                        Items.GetMax().Description));*/
-                }
-                else
+                        Items.GetMax().Description));
+
+                // Find best box of iteration, and remove packed items from unpacked list
+                var bestBox = packedBoxesIteration.GetMin();
+                var bestBoxItems = bestBox.GetItems().ShallowCopy();
+                var unpackedItems = Items.GetContent().Cast<Item>().ToList();
+
+                foreach (var packedItem in bestBoxItems.GetContent())
                 {
-                    var tmpPackedBoxes = packedBoxesIteration.GetContent().Cast<PackedBox>().ToList();
-                    packedBoxes.InsertAll(tmpPackedBoxes);
+                    foreach (var unpackedItem in unpackedItems)
+                    {
+                        if (packedItem == unpackedItem)
+                        {
+                            // UNSET AND THEN BREAK
+                            unpackedItems.Remove(unpackedItem);
+                            break;
+                        }
+                    }
                 }
+
+                var unpackedItemList = new ItemList();
+                foreach (var unpackedItem in unpackedItems)
+                {
+                    unpackedItemList.Insert(unpackedItem);
+                }
+
+                Items = unpackedItemList;
+                packedBoxes.Insert(bestBox);
             }
 
             return packedBoxes;
@@ -202,7 +208,7 @@ namespace SixFourThree.BoxPacker
             var overWeightBoxes = new List<PackedBox>();
             var underWeightBoxes = new List<PackedBox>();
 
-            var originalPackedBoxes = originalPackedBoxList.Copy().GetContent().Cast<PackedBox>();
+            var originalPackedBoxes = originalPackedBoxList.ShallowCopy().GetContent().Cast<PackedBox>();
             foreach (var originalPackedBox in originalPackedBoxes)
             {
                 var boxWeight = originalPackedBox.GetWeight();
@@ -296,9 +302,8 @@ namespace SixFourThree.BoxPacker
         /// </summary>
         /// <param name="box"></param>
         /// <param name="items"></param>
-        /// <param name="nonAddedItems"></param>
         /// <returns></returns>
-        public PackedBox PackIntoBox(Box box, ItemList items, out ItemList nonAddedItems)
+        public PackedBox PackIntoBox(Box box, ItemList items)
         {
             _logger.Log(LogLevel.Debug, "[EVALUATING BOX] {0}", box.Description);
 
@@ -312,15 +317,13 @@ namespace SixFourThree.BoxPacker
             var layerLength = 0;
             var layerDepth = 0;
 
-            nonAddedItems = new ItemList();
-
             while (!items.IsEmpty())
             {
                 var itemToPack = items.GetMax();
 
                 if (itemToPack.Depth > remainingDepth || itemToPack.Weight > remainingWeight)
                 {
-                    nonAddedItems.Insert(items.ExtractMax());
+                    items.ExtractMax();
                     continue;
                 }
 
@@ -344,7 +347,7 @@ namespace SixFourThree.BoxPacker
                     if (fitsRotatedGap < 0 ||
                         (fitsSameGap >= 0 && fitsSameGap <= fitsRotatedGap) ||
                         (itemWidth <= remainingWidth && !items.IsEmpty() && items.GetMax() == itemToPack &&
-                         remainingLength >= 2*itemLength))
+                         remainingLength >= 2 * itemLength))
                     {
                         _logger.Log(LogLevel.Debug, "fits (better) unrotated");
                         remainingLength -= itemLength;
@@ -403,12 +406,12 @@ namespace SixFourThree.BoxPacker
 
                     // TODO: TEST THIS
                     remainingWidth = (layerWidth == 0)
-                        ? (Int32) Math.Min(Math.Floor(layerWidth*1.1), box.InnerWidth)
+                        ? (Int32)Math.Min(Math.Floor(layerWidth * 1.1), box.InnerWidth)
                         : box.InnerWidth;
 
                     // TODO: TEST THIS
                     remainingLength = (layerLength == 0)
-                        ? (Int32)Math.Min(Math.Floor(layerLength*1.1), box.InnerLength)
+                        ? (Int32)Math.Min(Math.Floor(layerLength * 1.1), box.InnerLength)
                         : box.InnerLength;
 
                     remainingDepth -= layerDepth;
@@ -417,10 +420,11 @@ namespace SixFourThree.BoxPacker
                     _logger.Log(LogLevel.Debug, "doesn't fit, so starting next vertical layer");
                 }
             }
-            
+
             _logger.Log(LogLevel.Debug, "done with this box");
             return new PackedBox(box, packedItems, remainingWidth, remainingLength, remainingDepth, remainingWeight);
         }
+
 
         public BoxList GetBoxes()
         {

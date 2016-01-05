@@ -70,8 +70,7 @@ namespace SixFourThree.BoxPacker.Interfaces
         /// </summary>
         /// <param name="box"></param>
         /// <param name="items"></param>
-        /// <param name="nonProcessedItems"></param>
         /// <returns></returns>
-        PackedBox PackIntoBox(Box box, ItemList items, out ItemList nonProcessedItems);
+        PackedBox PackIntoBox(Box box, ItemList items);
     }
 }
