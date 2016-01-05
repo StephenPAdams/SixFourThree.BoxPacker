@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -87,6 +88,12 @@ namespace SixFourThree.BoxPacker.Model
         public PackedBoxList ShallowCopy()
         {
             PackedBoxList othercopy = (PackedBoxList)MemberwiseClone();
+
+            othercopy.Content = new ArrayList();
+
+            var items = Content.Cast<PackedBox>();
+            othercopy.Content.AddRange(items.ToArray());
+
             return othercopy;
         }
     }

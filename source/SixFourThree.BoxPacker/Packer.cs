@@ -145,6 +145,10 @@ namespace SixFourThree.BoxPacker
                 while (!boxesToEvaluate.IsEmpty())
                 {
                     var box = boxesToEvaluate.ExtractMin();
+
+                    // ISSUE HERE WITH ANY OF THE SHALLOWCOPY CALLED ON ANY OF THE *LIST CLASSES
+                    // IS THAT THE REFERENCE TO THE ARRAYLIST REMAINS THE SAME. THIS NEEDS TO CHANGE
+                    // JUsT NEED TO ENSURE THAT THE ITEMS IN THE LIST ARE THE SAME
                     var packedBox = PackIntoBox(box, Items.ShallowCopy());
 
                     if (packedBox.GetItems().GetCount() > 0)
