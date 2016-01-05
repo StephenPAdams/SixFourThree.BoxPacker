@@ -169,11 +169,25 @@ namespace SixFourThree.BoxPacker.Tests
                 MaxWeight = 150
             };
 
+            var box3 = new Box()
+            {
+                Description = "My Box 75x250x100",
+                OuterDepth = 75,
+                OuterLength = 250,
+                OuterWidth = 100,
+                EmptyWeight = 10,
+                InnerDepth = 75,
+                InnerLength = 250,
+                InnerWidth = 100,
+                MaxWeight = 150
+            };
+
             var packer = new Packer();
 
             packer.AddBox(box1);
-            packer.AddBox(box2); 
-            packer.AddItem(item1, 100);
+            packer.AddBox(box2);
+            packer.AddBox(box3); 
+            packer.AddItem(item1, 120);
 
             var packedBoxes = packer.Pack();
 

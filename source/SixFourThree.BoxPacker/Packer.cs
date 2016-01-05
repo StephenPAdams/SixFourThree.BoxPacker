@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NLog;
+using SixFourThree.BoxPacker.Helpers.Extensions;
 using SixFourThree.BoxPacker.Interfaces;
 using SixFourThree.BoxPacker.Model;
 
@@ -135,16 +136,22 @@ namespace SixFourThree.BoxPacker
         public PackedBoxList PackByVolume()
         {     
             var packedBoxes = new PackedBoxList();
+            ItemList nonProcessedItems = new ItemList();
 
-            while (Items.GetCount() > 0)
+            foreach (var item in Items.GetContent().Cast<Item>().ToList())
             {
-                var boxesToEvaluate = Boxes.ShallowCopy();
+                nonProcessedItems.Insert(item);
+            }
+
+            while (nonProcessedItems.GetCount() > 0)
+            {
+                var boxesToEvaluate = Boxes.Copy();
                 var packedBoxesIteration = new PackedBoxList();
 
                 while (!boxesToEvaluate.IsEmpty())
                 {
                     var box = boxesToEvaluate.ExtractMin();
-                    var packedBox = PackIntoBox(box, Items.ShallowCopy());
+                    var packedBox = PackIntoBox(box, nonProcessedItems.Copy(), out nonProcessedItems);
 
                     if (packedBox.GetItems().GetCount() > 0)
                     {
@@ -156,37 +163,25 @@ namespace SixFourThree.BoxPacker
                     }
                 }
 
-                // Check iteration was productive
+                // Check iteration was productive 
                 if (packedBoxesIteration.IsEmpty())
+                {      
+                    // OKAY, product was either TOO BIG or we RAN OUT OF BOXES
+                    // If product is TOO BIG, we should have an option to allow for a custom box size to accommodate it
+                    // If we RAN OUT OF BOXES, we should have an appropriate exception
+
+                    // So we don't have enough boxes, let's just knock it off the heap
+                    // We should probably log these somewhere to bubble them up to the library user
+                    nonProcessedItems.ExtractMax();
+                    /*
                     throw new Exception(String.Format("Item {0} is too large to fit into any box.",
-                        Items.GetMax().Description));
-
-                // Find best box of iteration, and remove packed items from unpacked list
-                var bestBox = packedBoxesIteration.GetMin();
-                var bestBoxItems = bestBox.GetItems().ShallowCopy();
-                var unpackedItems = Items.GetContent().Cast<Item>().ToList();
-
-                foreach (var packedItem in bestBoxItems.GetContent())
-                {
-                    foreach (var unpackedItem in unpackedItems)
-                    {
-                        if (packedItem == unpackedItem)
-                        {
-                            // UNSET AND THEN BREAK
-                            unpackedItems.Remove(unpackedItem);
-                            break;
-                        }
-                    }
+                        Items.GetMax().Description));*/
                 }
-
-                var unpackedItemList = new ItemList();
-                foreach (var unpackedItem in unpackedItems)
+                else
                 {
-                    unpackedItemList.Insert(unpackedItem);
+                    var tmpPackedBoxes = packedBoxesIteration.GetContent().Cast<PackedBox>().ToList();
+                    packedBoxes.InsertAll(tmpPackedBoxes);
                 }
-
-                Items = unpackedItemList;
-                packedBoxes.Insert(bestBox);
             }
 
             return packedBoxes;
@@ -207,7 +202,7 @@ namespace SixFourThree.BoxPacker
             var overWeightBoxes = new List<PackedBox>();
             var underWeightBoxes = new List<PackedBox>();
 
-            var originalPackedBoxes = originalPackedBoxList.ShallowCopy().GetContent().Cast<PackedBox>();
+            var originalPackedBoxes = originalPackedBoxList.Copy().GetContent().Cast<PackedBox>();
             foreach (var originalPackedBox in originalPackedBoxes)
             {
                 var boxWeight = originalPackedBox.GetWeight();
@@ -301,8 +296,9 @@ namespace SixFourThree.BoxPacker
         /// </summary>
         /// <param name="box"></param>
         /// <param name="items"></param>
+        /// <param name="nonAddedItems"></param>
         /// <returns></returns>
-        public PackedBox PackIntoBox(Box box, ItemList items)
+        public PackedBox PackIntoBox(Box box, ItemList items, out ItemList nonAddedItems)
         {
             _logger.Log(LogLevel.Debug, "[EVALUATING BOX] {0}", box.Description);
 
@@ -316,13 +312,15 @@ namespace SixFourThree.BoxPacker
             var layerLength = 0;
             var layerDepth = 0;
 
+            nonAddedItems = new ItemList();
+
             while (!items.IsEmpty())
             {
                 var itemToPack = items.GetMax();
 
                 if (itemToPack.Depth > remainingDepth || itemToPack.Weight > remainingWeight)
                 {
-                    items.ExtractMax();
+                    nonAddedItems.Insert(items.ExtractMax());
                     continue;
                 }
 

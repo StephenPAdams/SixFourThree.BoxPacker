@@ -43,9 +43,14 @@ namespace SixFourThree.BoxPacker.Model
                 MeanWeight += box.GetWeight();
             }
 
-            MeanWeight = MeanWeight.Value / GetCount();
+            if (MeanWeight.HasValue && GetCount() > 0)
+            {
+                MeanWeight = MeanWeight.Value/GetCount();
 
-            return MeanWeight.Value;
+                return MeanWeight.Value;
+            }
+
+            return 0;
         }
 
         public Double GetWeightVariance()
@@ -61,9 +66,14 @@ namespace SixFourThree.BoxPacker.Model
                 WeightVariance += Math.Pow(box.GetWeight() - mean, 2);
             }
 
-            WeightVariance = WeightVariance.Value / GetCount();
+            if (WeightVariance.HasValue && GetCount() > 0)
+            {
+                WeightVariance = WeightVariance.Value/GetCount();
 
-            return WeightVariance.Value;
+                return WeightVariance.Value;
+            }
+
+            return 0;
         }
 
         public void InsertAll(IList<PackedBox> packedBoxes)
