@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Exceptions\ItemTooLargeException.cs" />
     <Compile Include="Helpers\Extensions\ObjectExtensions.cs" />
     <Compile Include="Interfaces\IPacker.cs" />
     <Compile Include="Model\AhnentafelList.cs" />
