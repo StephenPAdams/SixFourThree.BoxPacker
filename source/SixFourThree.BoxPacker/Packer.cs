@@ -442,12 +442,12 @@ namespace SixFourThree.BoxPacker
                     }
 
                     // TODO: TEST THIS
-                    remainingWidth = (layerWidth == 0)
+                    remainingWidth = (layerWidth > 0)
                         ? (Int32)Math.Min(Math.Floor(layerWidth * 1.1), box.InnerWidth)
                         : box.InnerWidth;
 
                     // TODO: TEST THIS
-                    remainingLength = (layerLength == 0)
+                    remainingLength = (layerLength > 0)
                         ? (Int32)Math.Min(Math.Floor(layerLength * 1.1), box.InnerLength)
                         : box.InnerLength;
 
