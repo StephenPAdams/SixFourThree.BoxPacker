@@ -14,6 +14,7 @@ namespace SixFourThree.BoxPacker.Tests
         [Test]
         public void CanAddItem()
         {
+			// Add a box
             var item = new Item()
                        {
                            Description = "My Cube",
