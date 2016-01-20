@@ -9,6 +9,11 @@ namespace SixFourThree.BoxPacker.Model
     public class Item : IComparable<Item>
     {
         /// <summary>
+        /// Identifier for the item
+        /// </summary>
+        public String Id { get; set; }
+
+        /// <summary>
         /// Reference number (i.e. SKU, description, etc.)
         /// </summary>
         public String Description { get; set; }

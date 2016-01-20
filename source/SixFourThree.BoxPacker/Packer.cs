@@ -57,7 +57,7 @@ namespace SixFourThree.BoxPacker
                 Items.Insert(item);
             }
 
-            _logger.Log(LogLevel.Info, String.Format("Added {0} x {1}", quantity, item.Description));
+            _logger.Log(LogLevel.Info, String.Format("Added {0} x {1} (id: {2})", quantity, item.Description, item.Id));
         }
 
         /// <summary>
@@ -175,7 +175,10 @@ namespace SixFourThree.BoxPacker
 
                 // Check iteration was productive
                 if (packedBoxesIteration.IsEmpty() && !CreateBoxesForOversizedItems)
-                    throw new ItemTooLargeException(String.Format("Item {0} is too large to fit into any box.", Items.GetMax().Description));
+                {
+                    var oversizedItem = Items.GetMax();
+                    throw new ItemTooLargeException($"Item {oversizedItem.Description} (id: {oversizedItem.Id}) is too large to fit into any box.");
+                }
 
                 // 1. Create box, add to boxes list
                 // 2. Run through loop to add that product to that box
@@ -185,7 +188,7 @@ namespace SixFourThree.BoxPacker
                     var oversizedItem = Items.GetMax();
                     var box = new Box()
                               {
-                                  Description = String.Format("Custom box for {0}", oversizedItem.Description),
+                                  Description = String.Format("Custom box for {0}", oversizedItem.Description),                                  
                                   EmptyWeight = 0,
                                   InnerDepth = oversizedItem.Depth,
                                   InnerLength = oversizedItem.Length,
@@ -196,8 +199,8 @@ namespace SixFourThree.BoxPacker
                                   OuterWidth = oversizedItem.Width
                               };
                     Boxes.Insert(box);
-                    _logger.Log(LogLevel.Debug, "Item {0} is too large to fit into any box, creating custom box for it.",
-                        oversizedItem.Description);
+                    _logger.Log(LogLevel.Debug, "Item {0} (id: {1}) is too large to fit into any box, creating custom box for it.",
+                        oversizedItem.Description, oversizedItem.Id);
                 }
                 else
                 {
