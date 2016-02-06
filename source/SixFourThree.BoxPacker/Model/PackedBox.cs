@@ -46,6 +46,10 @@ namespace SixFourThree.BoxPacker.Model
         /// </summary>
         protected Int32 RemainingWeight { get; set; }
 
+        /// <summary>
+        /// Calculates the current weight of the items in the box in grams
+        /// </summary>
+        /// <returns></returns>
         public Int32 GetWeight()
         {
             if (Weight.HasValue)

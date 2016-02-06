@@ -41,7 +41,7 @@ namespace SixFourThree.BoxPacker.Model
         /// <summary>
         /// Volume in mm^3
         /// </summary>
-        public Int32 Volume { get { return Length * Depth * Weight; } }
+        public Int32 Volume { get { return Length * Depth * Width; } }
 
         public int CompareTo(Item other)
         {

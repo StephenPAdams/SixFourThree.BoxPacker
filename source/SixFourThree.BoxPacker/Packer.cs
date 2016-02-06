@@ -320,17 +320,18 @@ namespace SixFourThree.BoxPacker
 
                                 // We did some work, so see if we can do even better
                                 tryRepack = true;
-                                overWeightBoxes.Sort(originalPackedBoxList.ReverseCompareTo);
-                                underWeightBoxes.Sort(originalPackedBoxList.ReverseCompareTo);
+                                overWeightBoxes.Sort(packedBoxes.ReverseCompareTo);
+                                underWeightBoxes.Sort(packedBoxes.ReverseCompareTo);
 
-                                // The devil, but ported from PHP
+                                // The devil, but ported from PHP, was originally break 3, but .NET doesn't have a break x command
+                                // so we're using a goto statement. It is, however, more readable than break 3.
                                 goto MOVINGON;
                             }
                         }
                     }
-                }
 
-                MOVINGON: _logger.Log(LogLevel.Info, "Trying to repack");
+                    MOVINGON: _logger.Log(LogLevel.Info, "Trying to repack");
+                }
             } while (tryRepack);
 
             packedBoxes.InsertAll(overWeightBoxes);

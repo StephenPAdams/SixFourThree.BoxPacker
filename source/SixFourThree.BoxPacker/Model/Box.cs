@@ -61,10 +61,10 @@ namespace SixFourThree.BoxPacker.Model
         public int CompareTo(Box other)
         {
             if (other.InnerVolume > InnerVolume)
-                return 1;
+                return -1;
             
             if (other.InnerVolume < InnerVolume) 
-                return -1;
+                return 1;
             
             return 0;
         }
