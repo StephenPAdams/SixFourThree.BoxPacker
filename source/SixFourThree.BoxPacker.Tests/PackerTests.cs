@@ -51,6 +51,40 @@ namespace SixFourThree.BoxPacker.Tests
         }
 
         [Test]
+        public void CanPackByVolumeFor6OfSameItem()
+        {
+            var item1 = new Item()
+            {
+                Description = "6x6x7",
+                Depth = 178,
+                Length = 152,
+                Weight = 272,
+                Width = 152
+            };
+
+            var box = new Box()
+            {
+                Description = "20x20x7",
+                OuterDepth = 178,
+                OuterLength = 508,
+                OuterWidth = 508,
+                EmptyWeight = 1,
+                InnerDepth = 178,
+                InnerLength = 508,
+                InnerWidth = 508,
+                MaxWeight = 32000
+            };
+
+            var packer = new Packer();
+            packer.AddBox(box);
+            packer.AddItem(item1, 6);
+
+            var packedBoxes = packer.PackByVolume();
+            
+            TestContext.WriteLine(packedBoxes.GetCount());
+        }
+
+        [Test]
         public void CanPackBoxes()
         {
             var item1 = new Item()
@@ -685,7 +719,7 @@ namespace SixFourThree.BoxPacker.Tests
                 MaxWeight = 2
             };
 
-            var packer = new Packer(true);
+            var packer = new Packer(true, false);
 
             packer.AddBox(box1);
             packer.AddItem(item1, 1);

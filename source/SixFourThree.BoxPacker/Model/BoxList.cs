@@ -16,5 +16,15 @@ namespace SixFourThree.BoxPacker.Model
 
             return othercopy;
         }
+        public int ReverseCompareTo(Box boxA, Box boxB)
+        {
+            if (boxB.InnerVolume > boxA.InnerVolume)
+                return 1;
+            
+            if (boxB.InnerVolume < boxA.InnerVolume) 
+                return -1;
+            
+            return 0;
+        }
     }
 }

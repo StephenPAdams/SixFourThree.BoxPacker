@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SixFourThree.BoxPacker.Helpers;
 
 namespace SixFourThree.BoxPacker.Model
 {
@@ -23,25 +24,35 @@ namespace SixFourThree.BoxPacker.Model
         /// </summary>
         public Int32 Width { get; set; }
 
+        public Double WidthInInches => ConversionHelper.ConvertMillimetersToInches(Width);
+
         /// <summary>
         /// Length in mm
         /// </summary>
         public Int32 Length { get; set; }
+
+        public Double LengthInInches => ConversionHelper.ConvertMillimetersToInches(Length);
 
         /// <summary>
         /// Depth in mm
         /// </summary>
         public Int32 Depth { get; set; }
 
+        public Double DepthInInches => ConversionHelper.ConvertMillimetersToInches(Depth);
+
         /// <summary>
         /// Weight in g
         /// </summary>
         public Int32 Weight { get; set; }
 
+        public Double WeightInPounds => ConversionHelper.ConvertPoundsToGrams(Weight);
+
         /// <summary>
         /// Volume in mm^3
         /// </summary>
         public Int32 Volume { get { return Length * Depth * Width; } }
+
+        public Double VolumeInInches => LengthInInches * DepthInInches * WidthInInches;
 
         public int CompareTo(Item other)
         {
