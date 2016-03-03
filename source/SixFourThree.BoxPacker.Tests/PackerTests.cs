@@ -479,6 +479,11 @@ namespace SixFourThree.BoxPacker.Tests
 
             Assert.AreEqual(3, packedBoxes.GetCount());
 
+            Assert.AreEqual(1, packedBoxes.GetBest().GetItems().GetCount());
+            Assert.AreEqual(box, packedBoxes.GetBest().GetBox());
+            Assert.AreEqual(210, packedBoxes.GetBest().GetWeight());
+
+            packedBoxes.ExtractBest();
             Assert.AreEqual(2, packedBoxes.GetBest().GetItems().GetCount());
             Assert.AreEqual(box2, packedBoxes.GetBest().GetBox());
             Assert.AreEqual(4100, packedBoxes.GetBest().GetWeight());
@@ -486,12 +491,7 @@ namespace SixFourThree.BoxPacker.Tests
             packedBoxes.ExtractBest();
             Assert.AreEqual(2, packedBoxes.GetBest().GetItems().GetCount());
             Assert.AreEqual(box2, packedBoxes.GetBest().GetBox());
-            Assert.AreEqual(2300, packedBoxes.GetBest().GetWeight());
-
-            packedBoxes.ExtractBest();
-            Assert.AreEqual(1, packedBoxes.GetBest().GetItems().GetCount());
-            Assert.AreEqual(box2, packedBoxes.GetBest().GetBox());
-            Assert.AreEqual(2100, packedBoxes.GetBest().GetWeight());            
+            Assert.AreEqual(4100, packedBoxes.GetBest().GetWeight());            
         }
 
         [Test]
@@ -719,7 +719,7 @@ namespace SixFourThree.BoxPacker.Tests
                 MaxWeight = 2
             };
 
-            var packer = new Packer(true, false);
+            var packer = new Packer(true);
 
             packer.AddBox(box1);
             packer.AddItem(item1, 1);

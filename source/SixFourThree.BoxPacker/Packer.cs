@@ -23,27 +23,20 @@ namespace SixFourThree.BoxPacker
         /// for them. By default this is false.
         /// </summary>
         protected Boolean CreateBoxesForOversizedItems { get; set; }
-
-        /// <summary>
-        /// If true, boxes that are largest will be used to pack the products (reverse order).
-        /// </summary>
-        protected Boolean StartWithLargerBoxes { get; set; }
-
+        
         public Packer()
         {
             Items = new ItemList();
             Boxes = new BoxList();
             CreateBoxesForOversizedItems = false;
-            StartWithLargerBoxes = false;
             _logger = LogManager.GetCurrentClassLogger();
         }
 
-        public Packer(Boolean createBoxesForOverizedItems = false, Boolean startWithLargerBoxes = false)
+        public Packer(Boolean createBoxesForOverizedItems = false)
         {
             Items = new ItemList();
             Boxes = new BoxList();
             CreateBoxesForOversizedItems = createBoxesForOverizedItems;
-            StartWithLargerBoxes = startWithLargerBoxes;
             _logger = LogManager.GetCurrentClassLogger();
         }
 
@@ -166,38 +159,15 @@ namespace SixFourThree.BoxPacker
                 var boxesToEvaluate = Boxes.ShallowCopy();
                 var boxListToEvaluate = Boxes.ShallowCopy().GetContent().Cast<Box>().ToList();
                 var packedBoxesIteration = new PackedBoxList();
+                
+                boxListToEvaluate.Sort(boxesToEvaluate.ReverseCompareTo);
 
-                // If we're going to start with larger boxes, we're going to reverse the order based on inner volume.
-                // This way we'll try to insert as many products into a box as possible. We'll continue to do this with each box
-                // And then later on we'll try and take the most optimum boxes
-                if (StartWithLargerBoxes)
+                foreach (var box in boxListToEvaluate)
                 {
-                    boxListToEvaluate.Sort(boxesToEvaluate.ReverseCompareTo);
+                    var packedBox = PackIntoBox(box, Items.ShallowCopy());
 
-                    foreach (var box in boxListToEvaluate)
-                    {
-                        var packedBox = PackIntoBox(box, Items.ShallowCopy());
-
-                        if (packedBox.GetItems().GetCount() > 0)
-                            packedBoxesIteration.Insert(packedBox);                            
-                    }
-                }
-                else
-                {
-                    while (!boxesToEvaluate.IsEmpty())
-                    {
-                        var box = boxesToEvaluate.ExtractMin();
-                        var packedBox = PackIntoBox(box, Items.ShallowCopy());
-
-                        if (packedBox.GetItems().GetCount() > 0)
-                        {
-                            packedBoxesIteration.Insert(packedBox);
-
-                            // Have we found a single box that contains everything?
-                            if (packedBox.GetItems().GetCount() == Items.GetCount())
-                                break;
-                        }
-                    }
+                    if (packedBox.GetItems().GetCount() > 0)
+                        packedBoxesIteration.Insert(packedBox);                            
                 }
 
                 // Check iteration was productive
@@ -233,15 +203,10 @@ namespace SixFourThree.BoxPacker
                 {
                     // Find best box of iteration, and remove packed items from unpacked list
                     PackedBox bestBox;
-
-                    if (StartWithLargerBoxes)
-                    {
-                        var packedBoxListToEvaluate = packedBoxesIteration.GetContent().Cast<PackedBox>().ToList();
-                        packedBoxListToEvaluate.Sort(packedBoxesIteration.ReverseCompareTo);
-                        bestBox = packedBoxListToEvaluate.FirstOrDefault();
-                    }
-                    else
-                        bestBox = packedBoxesIteration.GetMin();
+                    
+                    var packedBoxListToEvaluate = packedBoxesIteration.GetContent().Cast<PackedBox>().ToList();
+                    packedBoxListToEvaluate.Sort(packedBoxesIteration.ReverseCompareTo);
+                    bestBox = packedBoxListToEvaluate.FirstOrDefault();
 
                     var bestBoxItems = bestBox.GetItems().ShallowCopy();
                     var unpackedItems = Items.GetContent().Cast<Item>().ToList();
