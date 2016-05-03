@@ -10,6 +10,11 @@ namespace SixFourThree.BoxPacker.Model
     public class Box : IComparable<Box>
     {
         /// <summary>
+        /// Unique identifier for the box. If not populated, will be a custom box
+        /// </summary>
+        public String BoxId { get; set; }
+
+        /// <summary>
         /// Reference number (i.e. SKU, description, etc.)
         /// </summary>
         public String Description { get; set; }
