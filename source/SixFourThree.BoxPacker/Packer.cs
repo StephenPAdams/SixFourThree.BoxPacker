@@ -25,13 +25,13 @@ namespace SixFourThree.BoxPacker
         /// Amount of padding to use between boxes (width)
         /// <example>0.1</example>
         /// </summary>
-        protected double WidthPadding { get; set; }
+        public double WidthPadding { get; set; }
 
         /// <summary>
         /// Amount of padding to use between boxes (length)
         /// <example>0.1</example>
         /// </summary>
-        protected double LengthPadding { get; set; }
+        public double LengthPadding { get; set; }
 
         /// <summary>
         /// If true, items that are oversized will not throw an exception, but will rather have a custom box created just
