@@ -16,7 +16,22 @@ namespace SixFourThree.BoxPacker
     {
         private static Logger _logger;
         protected ItemList Items { get; set; }
+        
+        protected bool StartWithLargerBoxes { get; set; }
+
         protected BoxList Boxes { get; set; }
+
+        /// <summary>
+        /// Amount of padding to use between boxes (width)
+        /// <example>0.1</example>
+        /// </summary>
+        protected double WidthPadding { get; set; }
+
+        /// <summary>
+        /// Amount of padding to use between boxes (length)
+        /// <example>0.1</example>
+        /// </summary>
+        protected double LengthPadding { get; set; }
 
         /// <summary>
         /// If true, items that are oversized will not throw an exception, but will rather have a custom box created just
@@ -29,15 +44,21 @@ namespace SixFourThree.BoxPacker
             Items = new ItemList();
             Boxes = new BoxList();
             CreateBoxesForOversizedItems = false;
+            StartWithLargerBoxes = false;
             _logger = LogManager.GetCurrentClassLogger();
+            WidthPadding = 0.1;
+            LengthPadding = 0.1;
         }
 
-        public Packer(Boolean createBoxesForOverizedItems = false)
+        public Packer(Boolean createBoxesForOverizedItems = false, bool startWithLargerBoxes = false)
         {
             Items = new ItemList();
             Boxes = new BoxList();
             CreateBoxesForOversizedItems = createBoxesForOverizedItems;
+            StartWithLargerBoxes = startWithLargerBoxes;
             _logger = LogManager.GetCurrentClassLogger();
+            WidthPadding = 0.1;
+            LengthPadding = 0.1;
         }
 
         /// <summary>
@@ -159,15 +180,31 @@ namespace SixFourThree.BoxPacker
                 var boxesToEvaluate = Boxes.ShallowCopy();
                 var boxListToEvaluate = Boxes.ShallowCopy().GetContent().Cast<Box>().ToList();
                 var packedBoxesIteration = new PackedBoxList();
-                
-                boxListToEvaluate.Sort(boxesToEvaluate.ReverseCompareTo);
 
-                foreach (var box in boxListToEvaluate)
+                if (!StartWithLargerBoxes)
                 {
-                    var packedBox = PackIntoBox(box, Items.ShallowCopy());
+                    while (!boxesToEvaluate.IsEmpty())
+                    {
+                        var box = boxesToEvaluate.ExtractMin();
+                        var packedBox = PackIntoBox(box, Items.ShallowCopy());
 
-                    if (packedBox.GetItems().GetCount() > 0)
-                        packedBoxesIteration.Insert(packedBox);                            
+                        if (packedBox.GetItems().GetCount() > 0)
+                        {
+                            packedBoxesIteration.Insert(packedBox);
+                            if (packedBox.GetItems().GetCount() == Items.GetCount())
+                                break;
+                        }
+                    }
+                }
+                else
+                {
+                    boxListToEvaluate.Sort(boxesToEvaluate.ReverseCompareTo);
+                    foreach (var box in boxListToEvaluate)
+                    {
+                        var packedBox = PackIntoBox(box, Items.ShallowCopy());
+                        if (packedBox.GetItems().GetCount() > 0)
+                            packedBoxesIteration.Insert(packedBox);
+                    }
                 }
 
                 // Check iteration was productive
@@ -201,12 +238,16 @@ namespace SixFourThree.BoxPacker
                 }
                 else
                 {
-                    // Find best box of iteration, and remove packed items from unpacked list
                     PackedBox bestBox;
-                    
-                    var packedBoxListToEvaluate = packedBoxesIteration.GetContent().Cast<PackedBox>().ToList();
-                    packedBoxListToEvaluate.Sort(packedBoxesIteration.ReverseCompareTo);
-                    bestBox = packedBoxListToEvaluate.FirstOrDefault();
+
+                    if (!StartWithLargerBoxes)
+                        bestBox = packedBoxesIteration.GetMin();
+                    else
+                    {
+                        var packedBoxListToEvaluate = packedBoxesIteration.GetContent().Cast<PackedBox>().ToList();
+                        packedBoxListToEvaluate.Sort(packedBoxesIteration.ReverseCompareTo);
+                        bestBox = packedBoxListToEvaluate.FirstOrDefault();
+                    }
 
                     var bestBoxItems = bestBox.GetItems().ShallowCopy();
                     var unpackedItems = Items.GetContent().Cast<Item>().ToList();
@@ -446,15 +487,13 @@ namespace SixFourThree.BoxPacker
                         items.ExtractMax();
                         continue;
                     }
-
-                    // TODO: TEST THIS
+                    
                     remainingWidth = (layerWidth > 0)
-                        ? (Int32)Math.Min(Math.Floor(layerWidth * 1.1), box.InnerWidth)
+                        ? (Int32)Math.Min(Math.Floor(layerWidth * (1.0 + WidthPadding)), box.InnerWidth)
                         : box.InnerWidth;
-
-                    // TODO: TEST THIS
+                    
                     remainingLength = (layerLength > 0)
-                        ? (Int32)Math.Min(Math.Floor(layerLength * 1.1), box.InnerLength)
+                        ? (Int32)Math.Min(Math.Floor(layerLength * (1.0 + LengthPadding)), box.InnerLength)
                         : box.InnerLength;
 
                     remainingDepth -= layerDepth;
