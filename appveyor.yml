@@ -1,5 +1,28 @@
-configuration: Release
+# version format
+version: 0.1.1.{build}
 
-# restore NuGet packages before running MSBuild
-before build:
- - nuget restore
+# enable patching of AssemblyInfo.* files
+assembly_info:
+  patch: true
+  file: "**\\AssemblyInfo.*"
+  assembly_version: "{version}"
+  assembly_file_version: "{version}"
+  assembly_informational_version: "{version}"
+  
+# Automatically register private account and/or project AppVeyor NuGet feeds.
+nuget:
+  account_feed: true
+  project_feed: true
+  
+
+# build configuration
+build:
+  project: source\SixFourThree.BoxPacker.sln     # path to Visual Studio solution or project
+  publish_nuget: true             # package projects with .nuspec files and push to artifacts
+
+  # MSBuild verbosity level
+  verbosity: normal
+
+# scripts to run before build
+before_build:
+  - nuget restore source\SixFourThree.BoxPacker.sln
