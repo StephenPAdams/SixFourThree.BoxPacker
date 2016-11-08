@@ -45,7 +45,7 @@ namespace SixFourThree.BoxPacker.Model
         /// </summary>
         public Int32 Weight { get; set; }
 
-        public Double WeightInPounds => ConversionHelper.ConvertPoundsToGrams(Weight);
+        public Double WeightInPounds => ConversionHelper.ConvertGramsToPounds(Weight);
 
         /// <summary>
         /// Volume in mm^3
