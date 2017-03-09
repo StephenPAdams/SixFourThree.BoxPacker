@@ -20,6 +20,11 @@ namespace SixFourThree.BoxPacker.Model
         public String Description { get; set; }
 
         /// <summary>
+        /// Extra information
+        /// </summary>
+        public String ExtraInfo { get; set; }
+
+        /// <summary>
         /// Width in mm
         /// </summary>
         public Int32 Width { get; set; }
