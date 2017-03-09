@@ -118,6 +118,8 @@ namespace SixFourThree.BoxPacker
             if (box == null)
                 throw new ArgumentNullException("box");
 
+            box.GeneratedId = Guid.NewGuid().ToString();
+
             Boxes.Insert(box);
 
             _logger.Log(LogLevel.Info, String.Format("Added box {0}", box.Description));
@@ -222,7 +224,8 @@ namespace SixFourThree.BoxPacker
                     var oversizedItem = Items.GetMax();
                     var box = new Box()
                               {
-                                  Description = String.Format("Custom box for {0}", oversizedItem.Description),                                  
+                                  Description = String.Format("Custom box for {0}", oversizedItem.Description),
+                                  GeneratedId = Guid.NewGuid().ToString(),
                                   EmptyWeight = 0,
                                   InnerDepth = oversizedItem.Depth,
                                   InnerLength = oversizedItem.Length,

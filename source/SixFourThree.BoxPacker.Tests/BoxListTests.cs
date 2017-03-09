@@ -39,6 +39,64 @@ namespace SixFourThree.BoxPacker.Tests
         }
 
         [Test]
+        public void AddingBoxesGeneratesIds()
+        {
+
+            var box = new Box()
+            {
+                Description = "Small",
+                OuterWidth = 21,
+                OuterLength = 21,
+                OuterDepth = 3,
+                EmptyWeight = 1,
+                InnerWidth = 20,
+                InnerLength = 20,
+                InnerDepth = 2,
+                MaxWeight = 100
+            };
+
+            var box2 = new Box()
+            {
+                Description = "Large",
+                OuterWidth = 201,
+                OuterLength = 201,
+                OuterDepth = 21,
+                EmptyWeight = 1,
+                InnerWidth = 200,
+                InnerLength = 200,
+                InnerDepth = 20,
+                MaxWeight = 1000
+            };
+
+            var box3 = new Box()
+            {
+                Description = "Medium",
+                OuterWidth = 101,
+                OuterLength = 101,
+                OuterDepth = 11,
+                EmptyWeight = 5,
+                InnerWidth = 100,
+                InnerLength = 100,
+                InnerDepth = 10,
+                MaxWeight = 500
+            };
+
+            var boxes = new BoxList();
+            boxes.Insert(box);
+            boxes.Insert(box2);
+            boxes.Insert(box3);
+
+            var packer = new Packer();
+            packer.AddBoxes(boxes);
+
+            var packerBoxes = packer.GetBoxes().GetContent().Cast<Box>();
+            foreach (var packerBox in packerBoxes)
+            {
+                Assert.IsNotEmpty(packerBox.GeneratedId);
+            }
+        }
+
+        [Test]
         public void CanAddBoxesInProperOrder()
         {
             var box = new Box()

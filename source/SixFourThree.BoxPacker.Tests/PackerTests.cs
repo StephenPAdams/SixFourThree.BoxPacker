@@ -695,6 +695,45 @@ namespace SixFourThree.BoxPacker.Tests
         }
 
         [Test]
+        public void CustomBoxesGeneratesIds()
+        {
+            var item1 = new Item()
+            {
+                Description = "My Cube 5x5x5",
+                Depth = 5,
+                Length = 5,
+                Weight = 5,
+                Width = 5
+            };
+
+            var box1 = new Box()
+            {
+                Description = "My Box 1x1x1",
+                OuterDepth = 1,
+                OuterLength = 1,
+                OuterWidth = 1,
+                EmptyWeight = 1,
+                InnerDepth = 1,
+                InnerLength = 1,
+                InnerWidth = 1,
+                MaxWeight = 2
+            };
+
+            var packer = new Packer(true);
+
+            packer.AddBox(box1);
+            packer.AddItem(item1, 1);
+
+            var packedBoxes = packer.Pack();
+
+            foreach (var packedBox in packedBoxes.GetContent().Cast<PackedBox>())
+            {
+                var box = packedBox.GetBox();
+                Assert.IsNotEmpty(box.GeneratedId);
+            }
+        }
+
+        [Test]
         public void OversizedItemsCanCreateCustomBoxesIfEnabled()
         {
             var item1 = new Item()
