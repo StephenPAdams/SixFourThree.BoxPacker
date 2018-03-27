@@ -149,6 +149,75 @@ namespace SixFourThree.BoxPacker.Tests
         }
 
         [Test]
+        public void PackedBoxesCanGenerateId()
+        {
+            var item1 = new Item()
+            {
+                Description = "My Cube 5x5x5",
+                Depth = 5,
+                Length = 5,
+                Weight = 5,
+                Width = 5
+            };
+
+            var box1 = new Box()
+            {
+                Description = "My Box 230x300x240",
+                OuterDepth = 230,
+                OuterLength = 300,
+                OuterWidth = 240,
+                EmptyWeight = 10,
+                InnerDepth = 230,
+                InnerLength = 300,
+                InnerWidth = 240,
+                MaxWeight = 250
+            };
+
+            var box2 = new Box()
+            {
+                Description = "My Box 100x200x300",
+                OuterDepth = 100,
+                OuterLength = 200,
+                OuterWidth = 300,
+                EmptyWeight = 10,
+                InnerDepth = 100,
+                InnerLength = 200,
+                InnerWidth = 300,
+                MaxWeight = 150
+            };
+
+            var box3 = new Box()
+            {
+                Description = "My Box 75x250x100",
+                OuterDepth = 75,
+                OuterLength = 250,
+                OuterWidth = 100,
+                EmptyWeight = 10,
+                InnerDepth = 75,
+                InnerLength = 250,
+                InnerWidth = 100,
+                MaxWeight = 150
+            };
+
+            var packer = new Packer();
+
+            packer.AddBox(box1);
+            packer.AddBox(box2);
+            packer.AddBox(box3);
+            packer.AddItem(item1, 120);
+
+            var packedBoxes = packer.Pack();
+
+            Assert.NotNull(packedBoxes);
+            Assert.Greater(packedBoxes.GetCount(), 0);
+
+            foreach (var packedBox in packedBoxes.GetContent().Cast<PackedBox>())
+            {
+                Assert.NotNull(packedBox.GeneratedId);
+            }
+        }
+
+        [Test]
         public void CanPackBoxThreeItemsFitEasily()
         {   
             var packer = new Packer();

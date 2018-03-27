@@ -11,6 +11,7 @@ namespace SixFourThree.BoxPacker.Model
         public PackedBox(Box box, ItemList items, Int32 remainingWidth, Int32 remainingLength, Int32 remainingDepth, Int32 remainingWeight)
         {
             Box = box;
+            GeneratedId = Guid.NewGuid().ToString();
             Items = items;
             RemainingWidth = remainingWidth;
             RemainingLength = remainingLength;
@@ -19,6 +20,12 @@ namespace SixFourThree.BoxPacker.Model
         }
 
         protected Box Box { get; set; }
+        
+        /// <summary>
+        /// Generated id for the packed box
+        /// </summary>
+        public String GeneratedId { get; }
+
         protected ItemList Items { get; set; }
 
         /// <summary>
