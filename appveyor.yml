@@ -1,25 +1,23 @@
-# enable patching of AssemblyInfo.* files
+version: 1.0.{build}
 assembly_info:
   patch: true
-  file: "**\\AssemblyInfo.*"
-  assembly_version: "{version}"
-  assembly_file_version: "{version}"
-  assembly_informational_version: "{version}"
-  
-# Automatically register private account and/or project AppVeyor NuGet feeds.
+  file: '**\AssemblyInfo.*'
+  assembly_version: '{version}'
+  assembly_file_version: '{version}'
+  assembly_informational_version: '{version}'
 nuget:
   account_feed: true
   project_feed: true
-  
-
-# build configuration
-build:
-  project: source\SixFourThree.BoxPacker.sln     # path to Visual Studio solution or project
-  publish_nuget: true             # package projects with .nuspec files and push to artifacts
-
-  # MSBuild verbosity level
-  verbosity: normal
-
-# scripts to run before build
 before_build:
   - nuget restore source\SixFourThree.BoxPacker.sln
+build:
+  project: source\SixFourThree.BoxPacker.sln     # path to Visual Studio solution or project
+  publish_nuget: true
+  publish_nuget_symbols: true
+  verbosity: minimal
+deploy:
+  provider: NuGet
+  api_key:
+    secure: mZKfV+avZ5EqBuUgCtWXsmTOIB+V3vb4nqQoziU9V29nGUMgQhK2RCdnl6nTDxnJ
+  skip_symbols: false
+  artifact: /.*\.nupkg/
