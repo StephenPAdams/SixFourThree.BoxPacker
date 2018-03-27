@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>SixFourThree.BoxPacker</id>
+    <version>$version$</version>
+    <authors>Stephen Adams</authors>
+    <owners>643 Labs</owners>
+    <licenseUrl>https://github.com/StephenPAdams/SixFourThree.BoxPacker/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/StephenPAdams/SixFourThree.BoxPacker</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Port of the dvdoug's BoxPacker library (originally written in PHP) to C#.</description>
+    <releaseNotes></releaseNotes>
+    <copyright></copyright>
+    <tags>Boxpacking box-packing</tags>
+  </metadata>
+</package>
