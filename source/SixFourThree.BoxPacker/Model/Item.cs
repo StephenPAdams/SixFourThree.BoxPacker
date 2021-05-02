@@ -25,6 +25,11 @@ namespace SixFourThree.BoxPacker.Model
         public String ExtraInfo { get; set; }
 
         /// <summary>
+        /// Total financial value of item.
+        /// </summary>
+        public Decimal? FinancialValue { get; set; }
+
+        /// <summary>
         /// Width in mm
         /// </summary>
         public Int32 Width { get; set; }
