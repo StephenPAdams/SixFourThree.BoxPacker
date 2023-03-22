@@ -4,7 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+#if NET6_0_OR_GREATER
+using Microsoft.Extensions.Logging;
+#else
 using NLog;
+#endif
 using SixFourThree.BoxPacker.Exceptions;
 using SixFourThree.BoxPacker.Helpers.Extensions;
 using SixFourThree.BoxPacker.Interfaces;
@@ -14,7 +18,11 @@ namespace SixFourThree.BoxPacker
 {
     public class Packer : IPacker
     {
+#if NET6_0_OR_GREATER
+        private readonly ILogger<Packer> _logger;
+#else
         private static Logger _logger;
+#endif
         protected ItemList Items { get; set; }
         
         protected bool StartWithLargerBoxes { get; set; }
@@ -39,24 +47,18 @@ namespace SixFourThree.BoxPacker
         /// </summary>
         protected Boolean CreateBoxesForOversizedItems { get; set; }
         
-        public Packer()
-        {
-            Items = new ItemList();
-            Boxes = new BoxList();
-            CreateBoxesForOversizedItems = false;
-            StartWithLargerBoxes = false;
-            _logger = LogManager.GetCurrentClassLogger();
-            WidthPadding = 0.1;
-            LengthPadding = 0.1;
-        }
-
         public Packer(Boolean createBoxesForOverizedItems = false, bool startWithLargerBoxes = false)
         {
             Items = new ItemList();
             Boxes = new BoxList();
             CreateBoxesForOversizedItems = createBoxesForOverizedItems;
             StartWithLargerBoxes = startWithLargerBoxes;
+#if NET6_0_OR_GREATER
+            LoggerFactory lf = new ();
+            _logger = lf.CreateLogger<Packer>();
+#else
             _logger = LogManager.GetCurrentClassLogger();
+#endif
             WidthPadding = 0.1;
             LengthPadding = 0.1;
         }
@@ -79,7 +81,11 @@ namespace SixFourThree.BoxPacker
                 Items.Insert(item);
             }
 
+#if NET6_0_OR_GREATER
+            _logger.LogInformation("Added {quantity} x {Description} (id: {Id})", quantity, item.Description, item.Id);
+#else
             _logger.Log(LogLevel.Info, String.Format("Added {0} x {1} (id: {2})", quantity, item.Description, item.Id));
+#endif
         }
 
         /// <summary>
@@ -89,7 +95,7 @@ namespace SixFourThree.BoxPacker
         public void AddItems(ItemList items)
         {
             if (items == null)
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("items");
 
             var tmpItems = items.GetContent().Cast<Item>();
             foreach (var item in tmpItems)
@@ -103,7 +109,7 @@ namespace SixFourThree.BoxPacker
         public void AddItems(IList<Item> items)
         {
             if (items == null)
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("items");
 
             foreach (var item in items)
                 AddItem(item, 1);
@@ -122,7 +128,11 @@ namespace SixFourThree.BoxPacker
 
             Boxes.Insert(box);
 
+#if NET6_0_OR_GREATER
+            _logger.LogInformation("Added box {Description}", box.Description);
+#else
             _logger.Log(LogLevel.Info, String.Format("Added box {0}", box.Description));
+#endif
         }
 
         /// <summary>
@@ -132,7 +142,7 @@ namespace SixFourThree.BoxPacker
         public void AddBoxes(BoxList boxes)
         {
             if (boxes == null)
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("boxes");
             
             var tmpBoxes = boxes.GetContent().Cast<Box>();
             foreach (var box in tmpBoxes)
@@ -146,7 +156,7 @@ namespace SixFourThree.BoxPacker
         public void AddBoxes(IList<Box> boxes)
         {
             if (boxes == null)
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("boxes");
 
             foreach (var box in boxes)
                 AddBox(box);
@@ -164,7 +174,11 @@ namespace SixFourThree.BoxPacker
             if (packedBoxes.GetCount() > 1)
                 packedBoxes = RedistributeWeight(packedBoxes);
 
+#if NET6_0_OR_GREATER
+            _logger.LogInformation("Packing completed, {Count} boxes", packedBoxes.GetCount());
+#else
             _logger.Log(LogLevel.Info, String.Format("Packing completed, {0} boxes", packedBoxes.GetCount()));
+#endif
 
             return packedBoxes;
         }
@@ -236,8 +250,13 @@ namespace SixFourThree.BoxPacker
                                   OuterWidth = oversizedItem.Width
                               };
                     Boxes.Insert(box);
+#if NET6_0_OR_GREATER
+                    _logger.LogDebug("Item {Description} (id: {Id}) is too large to fit into any box, creating custom box for it.",
+                        oversizedItem.Description, oversizedItem.Id);
+#else
                     _logger.Log(LogLevel.Debug, "Item {0} (id: {1}) is too large to fit into any box, creating custom box for it.",
                         oversizedItem.Description, oversizedItem.Id);
+#endif
                 }
                 else
                 {
@@ -289,8 +308,11 @@ namespace SixFourThree.BoxPacker
         public PackedBoxList RedistributeWeight(PackedBoxList originalPackedBoxList)
         {
             var targetWeight = originalPackedBoxList.GetMeanWeight();
-
+#if NET6_0_OR_GREATER
+            _logger.LogDebug("Repacking for weight distribution, weight variance {WeightVariance}, target weight {targetWeight}", originalPackedBoxList.GetWeightVariance(), targetWeight);
+#else
             _logger.Log(LogLevel.Debug, "Repacking for weight distribution, weight variance {0}, target weight {1}", originalPackedBoxList.GetWeightVariance(), targetWeight);
+#endif
 
             var packedBoxes = new PackedBoxList();
             var overWeightBoxes = new List<PackedBox>();
@@ -312,8 +334,12 @@ namespace SixFourThree.BoxPacker
       
             // Keep moving items from most overweight box to most underweight box
             var tryRepack = false;
-            do { 
+            do {
+#if NET6_0_OR_GREATER
+                _logger.LogDebug("Boxes under/over target: {underWeightBoxes}/{overWeightBoxes}", underWeightBoxes.Count, overWeightBoxes.Count);
+#else
                 _logger.Log(LogLevel.Debug, "Boxes under/over target: {0}/{1}", underWeightBoxes.Count, overWeightBoxes.Count);
+#endif
 
                 for (var underWeightBoxIndex = 0; underWeightBoxIndex < underWeightBoxes.Count; underWeightBoxIndex++)
                 {
@@ -356,7 +382,11 @@ namespace SixFourThree.BoxPacker
                                 // Found an edge case in packing algorithm that *increased* box count
                                 if (newHeavierBoxes.GetCount() > 1)
                                 {
+#if NET6_0_OR_GREATER
+                                    _logger.LogInformation("[REDISTRIBUTING WEIGHT] Abandoning redistribution, because new packing is less effciient than original");
+#else
                                     _logger.Log(LogLevel.Info, "[REDISTRIBUTING WEIGHT] Abandoning redistribution, because new packing is less effciient than original");
+#endif
                                     return originalPackedBoxList;
                                 }
 
@@ -376,7 +406,12 @@ namespace SixFourThree.BoxPacker
                         }
                     }
 
-                    MOVINGON: _logger.Log(LogLevel.Info, "Trying to repack");
+                MOVINGON:
+#if NET6_0_OR_GREATER
+                    _logger.LogInformation("Trying to repack");
+#else
+                    _logger.Log(LogLevel.Info, "Trying to repack");
+#endif
                 }
             } while (tryRepack);
 
@@ -394,7 +429,11 @@ namespace SixFourThree.BoxPacker
         /// <returns></returns>
         public PackedBox PackIntoBox(Box box, ItemList items)
         {
+#if NET6_0_OR_GREATER
+            _logger.LogDebug("[EVALUATING BOX] {Description}", box.Description);
+#else
             _logger.Log(LogLevel.Debug, "[EVALUATING BOX] {0}", box.Description);
+#endif
 
             var packedItems = new ItemList();
             var remainingDepth = box.InnerDepth;
@@ -416,9 +455,15 @@ namespace SixFourThree.BoxPacker
                     continue;
                 }
 
+#if NET6_0_OR_GREATER
+                _logger.LogDebug("Evaluating item {0}", itemToPack.Description);
+                _logger.LogDebug("Remaining width: {0}, length: {1}, depth: {2}", remainingWidth, remainingLength, remainingDepth);
+                _logger.LogDebug("LayerWidth: {0}, layerLength: {1}, layerDepth: {2}", layerWidth, layerLength, layerDepth);
+#else
                 _logger.Log(LogLevel.Debug, "Evaluating item {0}", itemToPack.Description);
                 _logger.Log(LogLevel.Debug, "Remaining width: {0}, length: {1}, depth: {2}", remainingWidth, remainingLength, remainingDepth);
                 _logger.Log(LogLevel.Debug, "LayerWidth: {0}, layerLength: {1}, layerDepth: {2}", layerWidth, layerLength, layerDepth);
+#endif
 
                 var itemWidth = itemToPack.Width;
                 var itemLength = itemToPack.Length;
@@ -436,14 +481,22 @@ namespace SixFourThree.BoxPacker
                         (itemWidth <= remainingWidth && !items.IsEmpty() && items.GetMax() == itemToPack &&
                          remainingLength >= 2 * itemLength))
                     {
+#if NET6_0_OR_GREATER
+                        _logger.LogDebug("Fits (better) unrotated.");
+#else
                         _logger.Log(LogLevel.Debug, "Fits (better) unrotated.");
+#endif
                         remainingLength -= itemLength;
                         layerLength += itemLength;
                         layerWidth = Math.Max(itemWidth, layerWidth);
                     }
                     else
                     {
+#if NET6_0_OR_GREATER
+                        _logger.LogDebug("Fits (better) rotated.");
+#else
                         _logger.Log(LogLevel.Debug, "Fits (better) rotated.");
+#endif
                         remainingLength -= itemWidth;
                         layerLength += itemWidth;
                         layerWidth = Math.Max(itemLength, layerWidth);
@@ -477,7 +530,11 @@ namespace SixFourThree.BoxPacker
                     if (remainingWidth >= Math.Min(itemWidth, itemLength) && layerDepth > 0 && layerWidth > 0 &&
                         layerLength > 0)
                     {
+#if NET6_0_OR_GREATER
+                        _logger.LogDebug("No more fit in lengthwise, resetting for new row.");
+#else
                         _logger.Log(LogLevel.Debug, "No more fit in lengthwise, resetting for new row.");
+#endif
                         remainingLength += layerLength;
                         remainingWidth -= layerWidth;
                         layerWidth = layerLength = 0;
@@ -486,7 +543,11 @@ namespace SixFourThree.BoxPacker
 
                     if (remainingLength < Math.Min(itemWidth, itemLength) || layerDepth == 0)
                     {
+#if NET6_0_OR_GREATER
+                        _logger.LogDebug("Doesn't fit on layer even when empty.");
+#else
                         _logger.Log(LogLevel.Debug, "Doesn't fit on layer even when empty.");
+#endif
                         items.ExtractMax();
                         continue;
                     }
@@ -502,11 +563,19 @@ namespace SixFourThree.BoxPacker
                     remainingDepth -= layerDepth;
 
                     layerWidth = layerLength = layerDepth = 0;
+#if NET6_0_OR_GREATER
+                    _logger.LogDebug("Doesn't fit, so starting next vertical layer.");
+#else
                     _logger.Log(LogLevel.Debug, "Doesn't fit, so starting next vertical layer.");
+#endif
                 }
             }
 
+#if NET6_0_OR_GREATER
+            _logger.LogDebug("Done with this box.");
+#else
             _logger.Log(LogLevel.Debug, "Done with this box.");
+#endif
             return new PackedBox(box, packedItems, remainingWidth, remainingLength, remainingDepth, remainingWeight);
         }
 
