@@ -37,8 +37,8 @@ namespace SixFourThree.BoxPacker.Interfaces
         /// <summary>
         /// Add a pre-prepared set of boxes all at once
         /// </summary>
-        /// <param name="items"></param>
-        void AddBoxes(BoxList items);
+        /// <param name="boxes"></param>
+        void AddBoxes(BoxList boxes);
 
         /// <summary>
         /// Add a pre-prepared set of boxes all at once
